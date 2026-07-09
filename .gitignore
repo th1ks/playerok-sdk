@@ -55,4 +55,4 @@ Thumbs.db
 # Documentation builds
 docs/.vitepress/dist/
 
-test-upload.ts
+**/test-upload.ts
