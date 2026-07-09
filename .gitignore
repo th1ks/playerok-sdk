@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+lib/
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Package manager
+.npm/
+.yarn/
+.pnpm-store/
+
+# Coverage
+coverage/
+
+# Tests
+test-results/
+.nyc_output/
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Local files
+*.local
+
+# Generated files
+*.generated.ts
+
+# Documentation builds
+docs/.vitepress/dist/
+
+test-upload.ts
