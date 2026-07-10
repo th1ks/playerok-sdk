@@ -4,6 +4,7 @@ import { ViewerAPI } from "./api/viewer.js";
 import { HttpClient } from "./http.js";
 import { AuthAPI } from "./modules/auth/api.js";
 import { UsersAPI } from "./modules/users/api.js";
+import { BannerAPI } from "./modules/banners/api.js";
 
 export class PlayerokClient {
   public readonly http: HttpClient;
@@ -11,6 +12,7 @@ export class PlayerokClient {
   public readonly viewer: ViewerAPI;
   public readonly file: FileAPI;
   public readonly users: UsersAPI;
+  public readonly banners: BannerAPI;
 
   constructor(options: { token?: string }) {
     this.http = new HttpClient(
@@ -22,5 +24,6 @@ export class PlayerokClient {
     this.viewer = new ViewerAPI(this.http);
     this.file = new FileAPI(this.http);
     this.users = new UsersAPI(this.http);
+    this.banners = new BannerAPI(this.http);
   }
 }
