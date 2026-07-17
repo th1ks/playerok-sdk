@@ -56,3 +56,6 @@ Thumbs.db
 docs/.vitepress/dist/
 
 **/test-upload.ts
+
+**/test.png
+package-lock.json
