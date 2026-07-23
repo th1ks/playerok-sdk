@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 import type {
   ConfirmUploadFileRequestSchema,
   UploadFieldsSchema,
@@ -7,6 +7,4 @@ import type {
 
 export type UploadFields = z.infer<typeof UploadFieldsSchema>;
 export type UploadFileResponse = z.infer<typeof UploadUrlSchema>;
-export type ConfirmUploadFileRequest = z.infer<
-  typeof ConfirmUploadFileRequestSchema
->;
+export type ConfirmUploadFileRequest = z.infer<typeof ConfirmUploadFileRequestSchema>;

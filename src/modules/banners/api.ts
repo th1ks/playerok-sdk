@@ -1,9 +1,5 @@
 import type { HttpClient } from "../../http.js";
-import {
-  BannerSchema,
-  BannersResponseSchema,
-  BannerFormat,
-} from "./schemas.js";
+import { type BannerFormat, BannersResponseSchema } from "./schemas.js";
 import type { PromoBannersResponse } from "./types.js";
 
 export class BannerAPI {

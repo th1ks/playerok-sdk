@@ -18,10 +18,7 @@ export class AuthAPI {
     await this.client.post("/auth/send-otp", body);
   }
 
-  async confirmOTP(
-    email: string,
-    otpCode: string,
-  ): Promise<ConfirmOtpResponse> {
+  async confirmOTP(email: string, otpCode: string): Promise<ConfirmOtpResponse> {
     const body = ConfirmOtpRequestSchema.parse({
       email,
       otpCode,

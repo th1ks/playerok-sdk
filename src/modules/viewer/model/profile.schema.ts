@@ -2,11 +2,11 @@ import { z } from "zod";
 import { AvatarSchema } from "./avatar.schema.js";
 
 export const ProfileSchema = z.object({
-  id: z.string(),
+	id: z.string(),
 
-  avatarURL: z.string().nullable(),
+	avatarURL: z.string().nullable(),
 
-  avatar: AvatarSchema.nullable(),
+	avatar: AvatarSchema.nullable(),
 
-  testimonialCounter: z.number(),
+	testimonialCounter: z.number(),
 });

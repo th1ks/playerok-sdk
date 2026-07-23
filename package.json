@@ -1,21 +1,46 @@
 {
-  "name": "playerok-api-sdk",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "tsx src/index.ts"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "name": "playerok-api",
+  "version": "0.1.0",
+  "description": "Optimal, zero-config-fuss TypeScript starter",
   "type": "module",
-  "devDependencies": {
-    "@types/node": "^26.1.1",
-    "tsx": "^4.23.0",
-    "typescript": "^6.0.3"
+  "packageManager": "pnpm@10.26.1",
+  "engines": {
+    "node": ">=20"
   },
-  "dependencies": {
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "check": "pnpm run typecheck && pnpm run lint && pnpm run test",
+    "clean": "rimraf dist coverage",
+    "prepublishOnly": "pnpm run build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/node": "^22.10.2",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.10",
     "zod": "^4.4.3"
   }
 }

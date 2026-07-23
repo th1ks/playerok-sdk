@@ -20,7 +20,7 @@ export const UploadUrlSchema = z
   .transform((data) => ({
     url: data.url.startsWith("http") ? data.url : `https://${data.url}`,
     fields: data.fields,
-    file_id: data.file_id ?? data.fileId!,
+    file_id: data.file_id || data.fileId,
   }));
 
 export const ConfirmUploadFileRequestSchema = z.object({

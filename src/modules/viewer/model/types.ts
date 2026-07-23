@@ -1,9 +1,8 @@
-import { z } from "zod";
-
-import { RoleSchema } from "./role.schema.js";
-import { AvatarSchema } from "./avatar.schema.js";
-import { ProfileSchema } from "./profile.schema.js";
-import { ViewerSchema } from "./viewer.schema.js";
+import type { z } from "zod";
+import type { AvatarSchema } from "./avatar.schema.js";
+import type { ProfileSchema } from "./profile.schema.js";
+import type { RoleSchema } from "./role.schema.js";
+import type { ViewerSchema } from "./viewer.schema.js";
 
 export type Role = z.infer<typeof RoleSchema>;
 

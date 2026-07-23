@@ -1,7 +1,6 @@
 import { z } from "zod";
-import { boolean, string } from "zod/v3";
-import { RoleSchema } from "../viewer/model/role.schema.js";
 import { AvatarSchema } from "../viewer/model/avatar.schema.js";
+import { RoleSchema } from "../viewer/model/role.schema.js";
 
 export const GetUserByUsernameResponseSchema = z.object({
   id: z.string(),

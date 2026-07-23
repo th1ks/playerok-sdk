@@ -1,4 +1,4 @@
-import { GeneralError, handleError, UnauthorizedError } from "./error.js";
+import { handleError } from "./error.js";
 import type { HttpMethod } from "./types/common.js";
 
 export class HttpClient {
@@ -9,13 +9,8 @@ export class HttpClient {
     private token?: string,
   ) {}
 
-  private async request<T>(
-    method: HttpMethod,
-    path: string,
-    body?: unknown,
-  ): Promise<T> {
-    const isFormData =
-      typeof FormData !== "undefined" && body instanceof FormData;
+  private async request<T>(method: HttpMethod, path: string, body?: unknown): Promise<T> {
+    const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
 
     const options: RequestInit = {
       method,
@@ -39,9 +34,7 @@ export class HttpClient {
     } else if (this.cookies.size > 0) {
       options.headers = {
         ...options.headers,
-        Cookie: [...this.cookies.entries()]
-          .map(([k, v]) => `${k}=${v}`)
-          .join(";"),
+        Cookie: [...this.cookies.entries()].map(([k, v]) => `${k}=${v}`).join(";"),
       };
     }
 
@@ -53,7 +46,7 @@ export class HttpClient {
 
     const data = r.status === 204 ? null : await r.json().catch(() => null);
 
-    const headers = r.headers as any;
+    const headers = r.headers;
 
     const setCookies: string[] = headers.getSetCookie?.() ?? [];
 

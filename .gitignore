@@ -59,3 +59,31 @@ docs/.vitepress/dist/
 
 **/test.png
 package-lock.json
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+coverage/
+*.tsbuildinfo
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OMC orchestration state (local only)
+.omc/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
