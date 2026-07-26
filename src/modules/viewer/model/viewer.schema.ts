@@ -3,35 +3,35 @@ import { ProfileSchema } from "./profile.schema.js";
 import { RoleSchema } from "./role.schema.js";
 
 export const ViewerSchema = z.object({
-	id: z.string(),
+  id: z.string(),
 
-	role: RoleSchema,
+  role: RoleSchema,
 
-	profile: ProfileSchema,
+  profile: ProfileSchema,
 
-	createdAt: z.string(),
+  createdAt: z.string(),
 
-	username: z.string().nullable(),
+  username: z.string().nullable(),
 
-	email: z.string().nullable(),
+  email: z.string().nullable(),
 
-	isBlocked: z.boolean(),
+  isBlocked: z.boolean(),
 
-	isBlockedFor: z.string().nullable(),
+  isBlockedFor: z.string().nullable(),
 
-	isFundsProtectionActive: z.boolean(),
+  isFundsProtectionActive: z.boolean(),
 
-	hasFrozenBalance: z.boolean(),
+  hasFrozenBalance: z.boolean(),
 
-	hasConfirmedPhoneNumber: z.boolean(),
+  hasConfirmedPhoneNumber: z.boolean(),
 
-	canPublishItems: z.boolean(),
+  canPublishItems: z.boolean(),
 
-	lastItemCreatedAt: z.string().nullable(),
+  lastItemCreatedAt: z.string().nullable(),
 
-	unreadChatsCounter: z.number(),
+  unreadChatsCounter: z.number(),
 
-	supportChatId: z.string().nullable(),
+  supportChatId: z.string().nullable(),
 
-	systemChatId: z.string().nullable(),
+  systemChatId: z.string().nullable(),
 });

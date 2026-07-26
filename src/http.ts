@@ -1,90 +1,202 @@
-import { handleError } from "./error.js";
+import { type CookieStore, MemoryCookieStore } from "./cookies.js";
+import { NetworkError, TimeoutError, handleError } from "./error.js";
+import { RateLimiter } from "./rate-limit.js";
 import type { HttpMethod } from "./types/common.js";
 
+export interface HttpClientOptions {
+  token?: string;
+  timeout?: number;
+  retries?: number;
+  retryDelay?: number;
+  cookieStore?: CookieStore;
+  maxConcurrent?: number;
+  minInterval?: number;
+  fetch?: typeof fetch;
+}
+
+export interface RequestOptions {
+  signal?: AbortSignal;
+}
+
+const RETRYABLE_METHODS = new Set<HttpMethod>(["GET", "PUT", "DELETE"]);
+
 export class HttpClient {
-  private cookies = new Map<string, string>();
+  private readonly cookies: CookieStore;
+  private readonly limiter: RateLimiter;
+  private readonly fetchImpl: typeof fetch;
+  private readonly timeout: number;
+  private readonly retries: number;
+  private readonly retryDelay: number;
+  private token: string | undefined;
 
   constructor(
     private baseUrl: string,
-    private token?: string,
-  ) {}
+    optionsOrToken?: HttpClientOptions | string,
+  ) {
+    const options: HttpClientOptions =
+      typeof optionsOrToken === "string" ? { token: optionsOrToken } : (optionsOrToken ?? {});
 
-  private async request<T>(method: HttpMethod, path: string, body?: unknown): Promise<T> {
+    this.token = options.token;
+    this.timeout = options.timeout ?? 30_000;
+    this.retries = options.retries ?? 2;
+    this.retryDelay = options.retryDelay ?? 500;
+    this.cookies = options.cookieStore ?? new MemoryCookieStore();
+    this.fetchImpl = options.fetch ?? globalThis.fetch;
+    this.limiter = new RateLimiter({
+      maxConcurrent: options.maxConcurrent,
+      minInterval: options.minInterval,
+    });
+  }
+
+  setToken(token: string | undefined): void {
+    this.token = token;
+  }
+
+  private buildHeaders(isFormData: boolean): Record<string, string> {
+    const headers: Record<string, string> = { Accept: "application/json" };
+
+    if (!isFormData) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    if (this.token) {
+      headers.Cookie = `token=${this.token}`;
+    } else {
+      const entries = this.cookies.entries();
+      if (entries.length > 0) {
+        headers.Cookie = entries.map(([k, v]) => `${k}=${v}`).join("; ");
+      }
+    }
+
+    return headers;
+  }
+
+  private storeSetCookies(response: Response): void {
+    const setCookies: string[] = response.headers.getSetCookie?.() ?? [];
+
+    for (const cookie of setCookies) {
+      const pair = cookie.split(";")[0];
+      if (!pair) continue;
+
+      const index = pair.indexOf("=");
+      if (index !== -1) {
+        this.cookies.set(pair.slice(0, index), pair.slice(index + 1));
+      }
+    }
+  }
+
+  private async request<T>(
+    method: HttpMethod,
+    path: string,
+    body?: unknown,
+    reqOptions?: RequestOptions,
+  ): Promise<T> {
+    return this.limiter.run(() => this.dispatch<T>(method, path, body, reqOptions));
+  }
+
+  private async dispatch<T>(
+    method: HttpMethod,
+    path: string,
+    body?: unknown,
+    reqOptions?: RequestOptions,
+  ): Promise<T> {
     const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
 
     const options: RequestInit = {
       method,
-      headers: {
-        Accept: "application/json",
-      },
+      headers: this.buildHeaders(isFormData),
     };
-
-    if (!isFormData) {
-      options.headers = {
-        ...options.headers,
-        "Content-Type": "application/json",
-      };
-    }
-
-    if (this.token) {
-      options.headers = {
-        ...options.headers,
-        Cookie: `token=${this.token}`,
-      };
-    } else if (this.cookies.size > 0) {
-      options.headers = {
-        ...options.headers,
-        Cookie: [...this.cookies.entries()].map(([k, v]) => `${k}=${v}`).join(";"),
-      };
-    }
 
     if (body !== undefined) {
       options.body = isFormData ? (body as FormData) : JSON.stringify(body);
     }
 
-    const r = await fetch(`${this.baseUrl}${path}`, options);
+    let lastError: unknown;
 
-    const data = r.status === 204 ? null : await r.json().catch(() => null);
+    for (let attempt = 0; attempt <= this.retries; attempt++) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), this.timeout);
+      const onExternalAbort = () => controller.abort();
+      reqOptions?.signal?.addEventListener("abort", onExternalAbort, { once: true });
 
-    const headers = r.headers;
+      try {
+        const response = await this.fetchImpl(`${this.baseUrl}${path}`, {
+          ...options,
+          signal: controller.signal,
+        });
 
-    const setCookies: string[] = headers.getSetCookie?.() ?? [];
+        this.storeSetCookies(response);
 
-    for (const cookie of setCookies) {
-      const pair = cookie.split(";")[0];
+        if (!response.ok) {
+          const data = await response.json().catch(() => null);
 
-      if (!pair) {
-        continue;
-      }
+          const retryAfter = this.parseRetryAfter(response);
 
-      const index = pair.indexOf("=");
+          if (this.shouldRetry(method, response.status, attempt)) {
+            lastError = { status: response.status };
+            await this.delay(attempt, retryAfter);
+            continue;
+          }
 
-      if (index !== -1) {
-        const key = pair.slice(0, index);
-        const value = pair.slice(index + 1);
+          handleError(response.status, path, data, retryAfter);
+        }
 
-        this.cookies.set(key, value);
+        return (response.status === 204 ? null : await response.json().catch(() => null)) as T;
+      } catch (error) {
+        if (controller.signal.aborted && !reqOptions?.signal?.aborted) {
+          lastError = new TimeoutError(path, this.timeout);
+        } else if (reqOptions?.signal?.aborted) {
+          throw error;
+        } else {
+          lastError = new NetworkError(path, error);
+        }
+
+        if (RETRYABLE_METHODS.has(method) && attempt < this.retries) {
+          await this.delay(attempt);
+          continue;
+        }
+        throw lastError;
+      } finally {
+        clearTimeout(timer);
+        reqOptions?.signal?.removeEventListener("abort", onExternalAbort);
       }
     }
 
-    if (!r.ok) {
-      handleError(r.status, path, data);
-    }
-
-    return data as T;
+    throw lastError instanceof Error ? lastError : new NetworkError(path, lastError);
   }
 
-  async get<T>(path: string): Promise<T> {
-    return this.request<T>("GET", path);
+  private shouldRetry(method: HttpMethod, status: number, attempt: number): boolean {
+    if (attempt >= this.retries) return false;
+    if (!RETRYABLE_METHODS.has(method)) return false;
+    return status === 429 || status >= 500;
   }
 
-  async post<T>(path: string, body: unknown): Promise<T> {
-    return this.request<T>("POST", path, body);
+  private parseRetryAfter(response: Response): number | undefined {
+    const header = response.headers.get("Retry-After");
+    if (!header) return undefined;
+    const seconds = Number(header);
+    return Number.isFinite(seconds) ? seconds : undefined;
   }
-  async put<T>(path: string, body: unknown): Promise<T> {
-    return this.request<T>("PUT", path, body);
+
+  private delay(attempt: number, retryAfterSeconds?: number): Promise<void> {
+    const ms =
+      retryAfterSeconds !== undefined ? retryAfterSeconds * 1000 : this.retryDelay * 2 ** attempt;
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
-  async delete<T>(path: string): Promise<T> {
-    return this.request<T>("DELETE", path);
+
+  async get(path: string, options?: RequestOptions): Promise<unknown> {
+    return this.request("GET", path, undefined, options);
+  }
+
+  async post(path: string, body: unknown, options?: RequestOptions): Promise<unknown> {
+    return this.request("POST", path, body, options);
+  }
+
+  async put(path: string, body: unknown, options?: RequestOptions): Promise<unknown> {
+    return this.request("PUT", path, body, options);
+  }
+
+  async delete(path: string, options?: RequestOptions): Promise<unknown> {
+    return this.request("DELETE", path, undefined, options);
   }
 }

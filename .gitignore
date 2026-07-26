@@ -1,15 +1,16 @@
 # Dependencies
 node_modules/
+.npm/
+.yarn/
+.pnpm-store/
 
 # Build output
 dist/
 build/
 lib/
-
-# TypeScript
 *.tsbuildinfo
 
-# Environment variables
+# Env & secrets
 .env
 .env.*
 !.env.example
@@ -21,32 +22,15 @@ npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 
-# Package manager
-.npm/
-.yarn/
-.pnpm-store/
-
-# Coverage
+# Coverage & tests
 coverage/
-
-# Tests
 test-results/
 .nyc_output/
 
-# IDE
-.vscode/
-.idea/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Temporary files
+# Temporary / cache
 *.tmp
 *.temp
 .cache/
-
-# Local files
 *.local
 
 # Generated files
@@ -55,35 +39,19 @@ Thumbs.db
 # Documentation builds
 docs/.vitepress/dist/
 
+# Scratch test artifacts
 **/test-upload.ts
-
 **/test.png
-package-lock.json
-
-# Dependencies
-node_modules/
-.pnpm-store/
-
-# Build output
-dist/
-coverage/
-*.tsbuildinfo
-
-# Env & secrets
-.env
-.env.*
-!.env.example
-
-# Logs
-*.log
-npm-debug.log*
-pnpm-debug.log*
 
 # OMC orchestration state (local only)
 .omc/
 
-# OS / editor
+# IDE / editor
+.vscode/
+.idea/
+.zed/
+*.swp
+
+# OS files
 .DS_Store
 Thumbs.db
-.idea/
-*.swp

@@ -1,9 +1,6 @@
 import type { z } from "zod";
 
-import type {
-	ViewerAvatarRequestSchema,
-	ViewerAvatarResponseSchema,
-} from "./schemas.js";
+import type { ViewerAvatarRequestSchema, ViewerAvatarResponseSchema } from "./schemas.js";
 
 export type ViewerAvatarRequest = z.infer<typeof ViewerAvatarRequestSchema>;
 
