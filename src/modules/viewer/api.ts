@@ -1,6 +1,8 @@
+import { th } from "zod/v4/locales";
 import type { HttpClient } from "../../http.js";
 import { ViewerAvatarRequestSchema, ViewerAvatarResponseSchema } from "./avatar/schemas.js";
 import type { ViewerAvatarResponse } from "./avatar/types.js";
+import type { ChoosenCardResonse } from "./cards/types.js";
 import {
   ViewerChatsByTypeResponseSchema,
   ViewerUnreadChatsCounterResponseSchema,
@@ -14,6 +16,7 @@ import type { Viewer } from "./model/types.js";
 import { ViewerSchema } from "./model/viewer.schema.js";
 import { ViewerNotificationsSchema } from "./notifications/schemas.js";
 import type { ViewerNotification } from "./notifications/types.js";
+import { ChoosenCardResonseSchmea } from "./cards/schemas.js";
 
 export class ViewerAPI {
   constructor(private client: HttpClient) {}
@@ -48,5 +51,15 @@ export class ViewerAPI {
     const r = await this.client.get(`/viewer/chats?type=${type}`);
 
     return ViewerChatsByTypeResponseSchema.parse(r);
+  }
+
+  async getChoosenCard(): Promise<ChoosenCardResonse | null> {
+    const r = await this.client.get(`/viewer/chosen-card`)
+
+    if (r == null) {
+      return null
+    }
+
+    return ChoosenCardResonseSchmea.parse(r)
   }
 }
