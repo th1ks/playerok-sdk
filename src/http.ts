@@ -1,5 +1,10 @@
 import { type CookieStore, MemoryCookieStore } from "./cookies.js";
-import { NetworkError, TimeoutError, handleError } from "./error.js";
+import {
+  ApiError,
+  NetworkError,
+  TimeoutError,
+  handleError,
+} from "./error.js";
 import { RateLimiter } from "./rate-limit.js";
 import type { HttpMethod } from "./types/common.js";
 
@@ -18,7 +23,11 @@ export interface RequestOptions {
   signal?: AbortSignal;
 }
 
-const RETRYABLE_METHODS = new Set<HttpMethod>(["GET", "PUT", "DELETE"]);
+const RETRYABLE_METHODS = new Set<HttpMethod>([
+  "GET",
+  "PUT",
+  "DELETE",
+]);
 
 export class HttpClient {
   private readonly cookies: CookieStore;
@@ -27,14 +36,17 @@ export class HttpClient {
   private readonly timeout: number;
   private readonly retries: number;
   private readonly retryDelay: number;
+
   private token: string | undefined;
 
   constructor(
-    private baseUrl: string,
+    private readonly baseUrl: string,
     optionsOrToken?: HttpClientOptions | string,
   ) {
     const options: HttpClientOptions =
-      typeof optionsOrToken === "string" ? { token: optionsOrToken } : (optionsOrToken ?? {});
+      typeof optionsOrToken === "string"
+        ? { token: optionsOrToken }
+        : (optionsOrToken ?? {});
 
     this.token = options.token;
     this.timeout = options.timeout ?? 30_000;
@@ -42,6 +54,7 @@ export class HttpClient {
     this.retryDelay = options.retryDelay ?? 500;
     this.cookies = options.cookieStore ?? new MemoryCookieStore();
     this.fetchImpl = options.fetch ?? globalThis.fetch;
+
     this.limiter = new RateLimiter({
       maxConcurrent: options.maxConcurrent,
       minInterval: options.minInterval,
@@ -52,8 +65,12 @@ export class HttpClient {
     this.token = token;
   }
 
-  private buildHeaders(isFormData: boolean): Record<string, string> {
-    const headers: Record<string, string> = { Accept: "application/json" };
+  private buildHeaders(
+    isFormData: boolean,
+  ): Record<string, string> {
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+    };
 
     if (!isFormData) {
       headers["Content-Type"] = "application/json";
@@ -63,8 +80,11 @@ export class HttpClient {
       headers.Cookie = `token=${this.token}`;
     } else {
       const entries = this.cookies.entries();
+
       if (entries.length > 0) {
-        headers.Cookie = entries.map(([k, v]) => `${k}=${v}`).join("; ");
+        headers.Cookie = entries
+          .map(([key, value]) => `${key}=${value}`)
+          .join("; ");
       }
     }
 
@@ -72,16 +92,26 @@ export class HttpClient {
   }
 
   private storeSetCookies(response: Response): void {
-    const setCookies: string[] = response.headers.getSetCookie?.() ?? [];
+    const setCookies: string[] =
+      response.headers.getSetCookie?.() ?? [];
 
     for (const cookie of setCookies) {
       const pair = cookie.split(";")[0];
-      if (!pair) continue;
+
+      if (!pair) {
+        continue;
+      }
 
       const index = pair.indexOf("=");
-      if (index !== -1) {
-        this.cookies.set(pair.slice(0, index), pair.slice(index + 1));
+
+      if (index === -1) {
+        continue;
       }
+
+      const key = pair.slice(0, index);
+      const value = pair.slice(index + 1);
+
+      this.cookies.set(key, value);
     }
   }
 
@@ -91,7 +121,14 @@ export class HttpClient {
     body?: unknown,
     reqOptions?: RequestOptions,
   ): Promise<T> {
-    return this.limiter.run(() => this.dispatch<T>(method, path, body, reqOptions));
+    return this.limiter.run(() =>
+      this.dispatch<T>(
+        method,
+        path,
+        body,
+        reqOptions,
+      ),
+    );
   }
 
   private async dispatch<T>(
@@ -100,7 +137,9 @@ export class HttpClient {
     body?: unknown,
     reqOptions?: RequestOptions,
   ): Promise<T> {
-    const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+    const isFormData =
+      typeof FormData !== "undefined" &&
+      body instanceof FormData;
 
     const options: RequestInit = {
       method,
@@ -108,95 +147,250 @@ export class HttpClient {
     };
 
     if (body !== undefined) {
-      options.body = isFormData ? (body as FormData) : JSON.stringify(body);
+      options.body = isFormData
+        ? body
+        : JSON.stringify(body);
     }
 
     let lastError: unknown;
 
-    for (let attempt = 0; attempt <= this.retries; attempt++) {
+    for (
+      let attempt = 0;
+      attempt <= this.retries;
+      attempt++
+    ) {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), this.timeout);
-      const onExternalAbort = () => controller.abort();
-      reqOptions?.signal?.addEventListener("abort", onExternalAbort, { once: true });
+
+      const timer = setTimeout(
+        () => controller.abort(),
+        this.timeout,
+      );
+
+      const onExternalAbort = () => {
+        controller.abort();
+      };
+
+      reqOptions?.signal?.addEventListener(
+        "abort",
+        onExternalAbort,
+        { once: true },
+      );
 
       try {
-        const response = await this.fetchImpl(`${this.baseUrl}${path}`, {
-          ...options,
-          signal: controller.signal,
-        });
+        const response = await this.fetchImpl(
+          `${this.baseUrl}${path}`,
+          {
+            ...options,
+            signal: controller.signal,
+          },
+        );
 
         this.storeSetCookies(response);
 
         if (!response.ok) {
-          const data = await response.json().catch(() => null);
+          const data = await this.readJson(response);
+          const retryAfter =
+            this.parseRetryAfter(response);
 
-          const retryAfter = this.parseRetryAfter(response);
+          if (
+            this.shouldRetry(
+              method,
+              response.status,
+              attempt,
+            )
+          ) {
+            lastError = new ApiError(
+              response.status,
+              `Request failed with status ${response.status}`,
+              path,
+              data,
+            );
 
-          if (this.shouldRetry(method, response.status, attempt)) {
-            lastError = { status: response.status };
-            await this.delay(attempt, retryAfter);
+            await this.delay(
+              attempt,
+              retryAfter,
+            );
+
             continue;
           }
 
-          handleError(response.status, path, data, retryAfter);
+          handleError(
+            response.status,
+            path,
+            data,
+            retryAfter,
+          );
         }
 
-        return (response.status === 204 ? null : await response.json().catch(() => null)) as T;
+        if (response.status === 204) {
+          return null as T;
+        }
+
+        return (await this.readJson(response)) as T;
       } catch (error) {
-        if (controller.signal.aborted && !reqOptions?.signal?.aborted) {
-          lastError = new TimeoutError(path, this.timeout);
-        } else if (reqOptions?.signal?.aborted) {
+        // Ошибки API уже обработаны.
+        // Не превращаем их в NetworkError.
+        if (error instanceof ApiError) {
+          throw error;
+        }
+
+        if (
+          controller.signal.aborted &&
+          !reqOptions?.signal?.aborted
+        ) {
+          lastError = new TimeoutError(
+            path,
+            this.timeout,
+          );
+        } else if (
+          reqOptions?.signal?.aborted
+        ) {
           throw error;
         } else {
-          lastError = new NetworkError(path, error);
+          lastError = new NetworkError(
+            path,
+            error,
+          );
         }
 
-        if (RETRYABLE_METHODS.has(method) && attempt < this.retries) {
+        if (
+          RETRYABLE_METHODS.has(method) &&
+          attempt < this.retries
+        ) {
           await this.delay(attempt);
           continue;
         }
+
         throw lastError;
       } finally {
         clearTimeout(timer);
-        reqOptions?.signal?.removeEventListener("abort", onExternalAbort);
+
+        reqOptions?.signal?.removeEventListener(
+          "abort",
+          onExternalAbort,
+        );
       }
     }
 
-    throw lastError instanceof Error ? lastError : new NetworkError(path, lastError);
+    throw lastError instanceof Error
+      ? lastError
+      : new NetworkError(path, lastError);
   }
 
-  private shouldRetry(method: HttpMethod, status: number, attempt: number): boolean {
-    if (attempt >= this.retries) return false;
-    if (!RETRYABLE_METHODS.has(method)) return false;
-    return status === 429 || status >= 500;
+  private async readJson(
+    response: Response,
+  ): Promise<unknown> {
+    const contentType =
+      response.headers.get("content-type");
+
+    if (
+      !contentType?.includes(
+        "application/json",
+      )
+    ) {
+      return null;
+    }
+
+    return response.json().catch(() => null);
   }
 
-  private parseRetryAfter(response: Response): number | undefined {
-    const header = response.headers.get("Retry-After");
-    if (!header) return undefined;
+  private shouldRetry(
+    method: HttpMethod,
+    status: number,
+    attempt: number,
+  ): boolean {
+    if (attempt >= this.retries) {
+      return false;
+    }
+
+    if (!RETRYABLE_METHODS.has(method)) {
+      return false;
+    }
+
+    return (
+      status === 429 ||
+      status >= 500
+    );
+  }
+
+  private parseRetryAfter(
+    response: Response,
+  ): number | undefined {
+    const header =
+      response.headers.get("Retry-After");
+
+    if (!header) {
+      return undefined;
+    }
+
     const seconds = Number(header);
-    return Number.isFinite(seconds) ? seconds : undefined;
+
+    return Number.isFinite(seconds)
+      ? seconds
+      : undefined;
   }
 
-  private delay(attempt: number, retryAfterSeconds?: number): Promise<void> {
+  private delay(
+    attempt: number,
+    retryAfterSeconds?: number,
+  ): Promise<void> {
     const ms =
-      retryAfterSeconds !== undefined ? retryAfterSeconds * 1000 : this.retryDelay * 2 ** attempt;
-    return new Promise((resolve) => setTimeout(resolve, ms));
+      retryAfterSeconds !== undefined
+        ? retryAfterSeconds * 1000
+        : this.retryDelay * 2 ** attempt;
+
+    return new Promise((resolve) =>
+      setTimeout(resolve, ms),
+    );
   }
 
-  async get(path: string, options?: RequestOptions): Promise<unknown> {
-    return this.request("GET", path, undefined, options);
+  async get(
+    path: string,
+    options?: RequestOptions,
+  ): Promise<unknown> {
+    return this.request(
+      "GET",
+      path,
+      undefined,
+      options,
+    );
   }
 
-  async post(path: string, body: unknown, options?: RequestOptions): Promise<unknown> {
-    return this.request("POST", path, body, options);
+  async post(
+    path: string,
+    body: unknown,
+    options?: RequestOptions,
+  ): Promise<unknown> {
+    return this.request(
+      "POST",
+      path,
+      body,
+      options,
+    );
   }
 
-  async put(path: string, body: unknown, options?: RequestOptions): Promise<unknown> {
-    return this.request("PUT", path, body, options);
+  async put(
+    path: string,
+    body: unknown,
+    options?: RequestOptions,
+  ): Promise<unknown> {
+    return this.request(
+      "PUT",
+      path,
+      body,
+      options,
+    );
   }
 
-  async delete(path: string, options?: RequestOptions): Promise<unknown> {
-    return this.request("DELETE", path, undefined, options);
+  async delete(
+    path: string,
+    options?: RequestOptions,
+  ): Promise<unknown> {
+    return this.request(
+      "DELETE",
+      path,
+      undefined,
+      options,
+    );
   }
 }

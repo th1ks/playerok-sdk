@@ -1,7 +1,9 @@
+import { th } from "zod/v4/locales";
 import { HttpClient, type HttpClientOptions } from "./http.js";
 import { AuthAPI } from "./modules/auth/api.js";
 import { BannerAPI } from "./modules/banners/api.js";
 import { FileAPI } from "./modules/file/api.js";
+import { ItemsAPI } from "./modules/items/api.js";
 import { UsersAPI } from "./modules/users/api.js";
 import { ViewerAPI } from "./modules/viewer/api.js";
 
@@ -18,6 +20,7 @@ export class PlayerokClient {
   public readonly file: FileAPI;
   public readonly users: UsersAPI;
   public readonly banners: BannerAPI;
+  public readonly items: ItemsAPI;
 
   constructor(options: PlayerokClientOptions = {}) {
     const { baseUrl = DEFAULT_BASE_URL, ...httpOptions } = options;
@@ -29,5 +32,6 @@ export class PlayerokClient {
     this.file = new FileAPI(this.http);
     this.users = new UsersAPI(this.http);
     this.banners = new BannerAPI(this.http);
+    this.items = new ItemsAPI(this.http)
   }
 }

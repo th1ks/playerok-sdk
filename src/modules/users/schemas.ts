@@ -7,7 +7,7 @@ export const GetUserByUsernameResponseSchema = z.object({
   username: z.string().nullable(),
   role: RoleSchema,
   isBlocked: z.boolean(),
-  avatarURL: z.string(),
+  avatarURL: z.string().nullable(),
   avatar: AvatarSchema.nullable(),
   rating: z.number(),
   testimonialCounter: z.number(),

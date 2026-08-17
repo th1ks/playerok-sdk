@@ -1,68 +1,85 @@
-export class GeneralError extends Error {
+import { ApiErrorSchema } from "./types/common.js";
+
+export class ApiError extends Error {
+  override name = "ApiError";
+
   constructor(
-    public readonly code: number,
+    public readonly statusCode: number,
+    message: string,
     public readonly path: string,
     public readonly data?: unknown,
   ) {
-    super(GeneralError.extractMessage(data) ?? `API Error ${code}: ${path}`);
-
-    this.name = "GeneralError";
-  }
-
-  private static extractMessage(data?: unknown): string | undefined {
-    if (typeof data === "object" && data !== null && "message" in data) {
-      return String(data.message);
-    }
-
-    return undefined;
+    super(message);
   }
 }
 
-export function handleError(
-  code: number,
-  path: string,
-  data?: unknown,
-  retryAfter?: number,
-): never {
-  switch (code) {
-    case 404:
-      throw new NotFoundError(code, path, data);
-    case 401:
-      throw new UnauthorizedError(code, path, data);
-    case 403:
-      throw new ForbiddenError(code, path, data);
-    case 429:
-      throw new RateLimitError(code, path, data, retryAfter);
-  }
-  if (code >= 500) {
-    throw new ServerError(code, path, data);
-  }
-
-  throw new GeneralError(code, path, data);
-}
-
-export class UnauthorizedError extends GeneralError {
+export class UnauthorizedError extends ApiError {
   override name = "UnauthorizedError";
 }
-export class NotFoundError extends GeneralError {
-  override name = "NotFoundError";
-}
-export class ForbiddenError extends GeneralError {
+
+export class ForbiddenError extends ApiError {
   override name = "ForbiddenError";
 }
-export class ServerError extends GeneralError {
+
+export class NotFoundError extends ApiError {
+  override name = "NotFoundError";
+}
+
+export class ServerError extends ApiError {
   override name = "ServerError";
 }
-export class RateLimitError extends GeneralError {
+
+export class RateLimitError extends ApiError {
   override name = "RateLimitError";
 
   constructor(
-    code: number,
+    statusCode: number,
+    message: string,
     path: string,
     data?: unknown,
     public readonly retryAfter?: number,
   ) {
-    super(code, path, data);
+    super(statusCode, message, path, data);
+  }
+}
+
+export function handleError(
+  status: number,
+  path: string,
+  data: unknown,
+  retryAfter?: number,
+): never {
+  const parsed = ApiErrorSchema.safeParse(data);
+
+  const message = parsed.success
+    ? parsed.data.message
+    : `Request failed with status ${status}`;
+
+  switch (status) {
+    case 401:
+      throw new UnauthorizedError(status, message, path, data);
+
+    case 403:
+      throw new ForbiddenError(status, message, path, data);
+
+    case 404:
+      throw new NotFoundError(status, message, path, data);
+
+    case 429:
+      throw new RateLimitError(
+        status,
+        message,
+        path,
+        data,
+        retryAfter,
+      );
+
+    default:
+      if (status >= 500) {
+        throw new ServerError(status, message, path, data);
+      }
+
+      throw new ApiError(status, message, path, data);
   }
 }
 
@@ -101,8 +118,10 @@ export class UnexpectedResponseError extends Error {
 }
 
 export class ValidationError extends Error {
+  override name = "ValidationError";
+
   constructor(
-    public field: string,
+    public readonly field: string,
     message: string,
   ) {
     super(message);
