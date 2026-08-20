@@ -1,4 +1,3 @@
-import { th } from "zod/v4/locales";
 import { HttpClient, type HttpClientOptions } from "./http.js";
 import { AuthAPI } from "./modules/auth/api.js";
 import { BannerAPI } from "./modules/banners/api.js";

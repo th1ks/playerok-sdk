@@ -1,4 +1,3 @@
-import { th } from "zod/v4/locales";
 import type { HttpClient } from "../../http.js";
 import { ViewerAvatarRequestSchema, ViewerAvatarResponseSchema } from "./avatar/schemas.js";
 import type { ViewerAvatarResponse } from "./avatar/types.js";
@@ -54,7 +53,7 @@ export class ViewerAPI {
   }
 
   async getChoosenCard(): Promise<ChoosenCardResonse | null> {
-    const r = await this.client.get(`/viewer/chosen-card`)
+    const r = await this.client.get("/viewer/chosen-card")
 
     if (r == null) {
       return null
