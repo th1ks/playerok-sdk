@@ -41,28 +41,6 @@ const client = new PlayerokClient({
 });
 ```
 
-## Документация на GitHub Pages
+## Typedoc
 
-Документация генерируется TypeDoc и автоматически публикуется workflow
-`.github/workflows/docs.yml` при каждом push в ветку `main`.
-
-Чтобы включить публикацию:
-
-1. Закоммитьте и отправьте изменения в GitHub:
-
-   ```bash
-   git add .github/workflows/docs.yml typedoc.json package.json pnpm-lock.yaml
-   git commit -m "docs: deploy TypeDoc to GitHub Pages"
-   git push origin main
-   ```
-
-2. Откройте в репозитории **Settings → Pages**.
-3. В поле **Source** выберите **GitHub Actions**.
-4. Дождитесь успешного выполнения workflow **Deploy documentation to GitHub Pages**
-   на вкладке **Actions**.
-
-После публикации документация будет доступна по адресу:
-https://th1ks.github.io/playerok-sdk/
-
-Workflow также можно запустить вручную через **Actions → Deploy documentation to
-GitHub Pages → Run workflow**.
+Находится на https://th1ks.github.io/playerok-sdk/
