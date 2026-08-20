@@ -31,6 +31,6 @@ export class PlayerokClient {
     this.file = new FileAPI(this.http);
     this.users = new UsersAPI(this.http);
     this.banners = new BannerAPI(this.http);
-    this.items = new ItemsAPI(this.http)
+    this.items = new ItemsAPI(this.http);
   }
 }
