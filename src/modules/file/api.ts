@@ -3,6 +3,12 @@ import type { HttpClient } from "../../http.js";
 import { ConfirmUploadFileRequestSchema, UploadUrlSchema } from "./schemas.js";
 import type { ConfirmUploadOptions, UploadFileResponse } from "./types.js";
 
+/**
+ * Методы загрузки файлов в Playerok.
+ *
+ * Модуль получает upload-параметры, отправляет `FormData`, а затем подтверждает
+ * загрузку через Playerok API.
+ */
 export class FileAPI {
   constructor(private client: HttpClient) {}
 
@@ -37,6 +43,19 @@ export class FileAPI {
     return upload.file_id;
   }
 
+  /**
+   * Загружает файл и подтверждает загрузку.
+   *
+   * @param file Файл, поддерживаемый глобальным `FormData` текущей среды.
+   * @param options Дополнительные параметры загрузки.
+   * @returns ID загруженного файла.
+   * @throws {UnexpectedResponseError} Если API не вернул `file_id`.
+   *
+   * @example
+   * ```ts
+   * const fileId = await client.file.confirmUpload(file);
+   * ```
+   */
   async confirmUpload(file: File, options?: ConfirmUploadOptions): Promise<string> {
     const fileId = await this.upload(file, options);
     const body = ConfirmUploadFileRequestSchema.parse({ id: fileId });
@@ -45,6 +64,12 @@ export class FileAPI {
     return fileId;
   }
 
+  /**
+   * Загружает файл через avatar-режим, сохраняющий исходный GIF.
+   *
+   * @param file Файл аватара.
+   * @returns ID загруженного avatar-файла.
+   */
   async confirmAvatarUpload(file: File): Promise<string> {
     return this.confirmUpload(file, { fileType: "avatar" });
   }

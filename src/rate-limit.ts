@@ -1,8 +1,11 @@
 export interface RateLimiterOptions {
+  /** Максимальное количество одновременно выполняющихся запросов. */
   maxConcurrent?: number | undefined;
+  /** Минимальный интервал между стартами запросов в миллисекундах. */
   minInterval?: number | undefined;
 }
 
+/** Ограничитель параллельности и частоты выполнения asynchronous-операций. */
 export class RateLimiter {
   private readonly maxConcurrent: number;
   private readonly minInterval: number;
@@ -11,11 +14,13 @@ export class RateLimiter {
   private lastStart = 0;
   private queue: Array<() => void> = [];
 
+  /** Создаёт ограничитель с безопасными значениями по умолчанию. */
   constructor(options: RateLimiterOptions = {}) {
     this.maxConcurrent = Math.max(1, options.maxConcurrent ?? 5);
     this.minInterval = Math.max(0, options.minInterval ?? 0);
   }
 
+  /** Выполняет функцию после получения разрешения от ограничителя. */
   async run<T>(fn: () => Promise<T>): Promise<T> {
     await this.acquire();
     try {

@@ -18,6 +18,7 @@ export const BannersResponseSchema = z.object({
   items: z.array(BannerSchema),
 });
 
+/** Формат изображений, который нужно вернуть в баннерах. */
 export enum BannerFormat {
   webp = "webp",
   jpeg = "jpeg",

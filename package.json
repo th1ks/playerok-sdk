@@ -29,7 +29,9 @@
     "check": "pnpm run typecheck && pnpm run lint",
     "clean": "rimraf dist coverage",
     "prepare": "pnpm run build",
-    "prepublishOnly": "pnpm run build"
+    "prepublishOnly": "pnpm run build",
+    "docs": "typedoc",
+    "docs:check": "typedoc --treatWarningsAsErrors"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.9",
@@ -37,6 +39,7 @@
     "rimraf": "^6.1.3",
     "tsup": "^8.5.1",
     "tsx": "^4.23.12",
+    "typedoc": "^0.28.20",
     "typescript": "^5.9.3",
     "zod": "^4.4.3"
   }

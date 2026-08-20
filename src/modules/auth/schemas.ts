@@ -12,6 +12,7 @@ export const ConfirmOtpRequestSchema = z.object({
     .regex(/^\d{6}$/),
 });
 
+/** Схема ответа подтверждения OTP. */
 export const ConfirmOtpResponseSchema = z.object({
   requiresTwoFactor: z.boolean(),
   secondFactorSession: z

@@ -9,17 +9,26 @@ import { RateLimiter } from "./rate-limit.js";
 import type { HttpMethod } from "./types/common.js";
 
 export interface HttpClientOptions {
+  /** Готовый Playerok token. Имеет приоритет над cookies из хранилища. */
   token?: string;
+  /** Таймаут одного HTTP-запроса в миллисекундах. По умолчанию 30 секунд. */
   timeout?: number;
+  /** Количество повторных попыток для безопасных методов. По умолчанию 2. */
   retries?: number;
+  /** Базовая задержка между повторными попытками в миллисекундах. */
   retryDelay?: number;
+  /** Хранилище cookies. По умолчанию используется `MemoryCookieStore`. */
   cookieStore?: CookieStore;
+  /** Максимальное число параллельных запросов. */
   maxConcurrent?: number;
+  /** Минимальный интервал между стартами запросов в миллисекундах. */
   minInterval?: number;
+  /** Пользовательская реализация fetch, полезная для тестов и прокси-обёрток. */
   fetch?: typeof fetch;
 }
 
 export interface RequestOptions {
+  /** Внешний сигнал отмены запроса. */
   signal?: AbortSignal;
 }
 
@@ -29,6 +38,12 @@ const RETRYABLE_METHODS = new Set<HttpMethod>([
   "DELETE",
 ]);
 
+/**
+ * Низкоуровневый HTTP-клиент Playerok.
+ *
+ * Автоматически добавляет token/cookies, сохраняет `Set-Cookie`, ограничивает
+ * параллельность, применяет timeout и повторяет подходящие запросы.
+ */
 export class HttpClient {
   private readonly cookies: CookieStore;
   private readonly limiter: RateLimiter;
@@ -39,6 +54,10 @@ export class HttpClient {
 
   private token: string | undefined;
 
+  /**
+   * @param baseUrl Базовый URL без завершающего пути метода.
+   * @param optionsOrToken Настройки клиента либо строка token для совместимости.
+   */
   constructor(
     private readonly baseUrl: string,
     optionsOrToken?: HttpClientOptions | string,
@@ -61,6 +80,7 @@ export class HttpClient {
     });
   }
 
+  /** Заменяет token, который будет отправляться в cookie следующих запросов. */
   setToken(token: string | undefined): void {
     this.token = token;
   }
@@ -344,6 +364,7 @@ export class HttpClient {
     );
   }
 
+  /** Выполняет GET-запрос и возвращает разобранный JSON-ответ. */
   async get(
     path: string,
     options?: RequestOptions,
@@ -356,6 +377,7 @@ export class HttpClient {
     );
   }
 
+  /** Выполняет POST-запрос с JSON или `FormData`. */
   async post(
     path: string,
     body: unknown,
@@ -369,6 +391,7 @@ export class HttpClient {
     );
   }
 
+  /** Выполняет PUT-запрос с JSON или `FormData`. */
   async put(
     path: string,
     body: unknown,
@@ -382,6 +405,7 @@ export class HttpClient {
     );
   }
 
+  /** Выполняет DELETE-запрос. */
   async delete(
     path: string,
     options?: RequestOptions,

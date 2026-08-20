@@ -1,5 +1,6 @@
 import { ApiErrorSchema } from "./types/common.js";
 
+/** Базовая ошибка HTTP-ответа Playerok API. */
 export class ApiError extends Error {
   override name = "ApiError";
 
@@ -13,22 +14,27 @@ export class ApiError extends Error {
   }
 }
 
+/** Ошибка 401: отсутствует или недействительна авторизация. */
 export class UnauthorizedError extends ApiError {
   override name = "UnauthorizedError";
 }
 
+/** Ошибка 403: операция запрещена текущему пользователю. */
 export class ForbiddenError extends ApiError {
   override name = "ForbiddenError";
 }
 
+/** Ошибка 404: ресурс не найден. */
 export class NotFoundError extends ApiError {
   override name = "NotFoundError";
 }
 
+/** Ошибка ответа сервера с кодом 5xx. */
 export class ServerError extends ApiError {
   override name = "ServerError";
 }
 
+/** Ошибка 429 с необязательной задержкой `retryAfter`. */
 export class RateLimitError extends ApiError {
   override name = "RateLimitError";
 
@@ -43,6 +49,7 @@ export class RateLimitError extends ApiError {
   }
 }
 
+/** Преобразует HTTP-статус и тело ответа в специализированное исключение. */
 export function handleError(
   status: number,
   path: string,
@@ -83,6 +90,7 @@ export function handleError(
   }
 }
 
+/** Запрос не завершился за настроенное время. */
 export class TimeoutError extends Error {
   override name = "TimeoutError";
 
@@ -94,6 +102,7 @@ export class TimeoutError extends Error {
   }
 }
 
+/** Сетевая ошибка, возникшая до получения корректного HTTP-ответа. */
 export class NetworkError extends Error {
   override name = "NetworkError";
 
@@ -105,6 +114,7 @@ export class NetworkError extends Error {
   }
 }
 
+/** API вернул успешный ответ неожиданной структуры. */
 export class UnexpectedResponseError extends Error {
   override name = "UnexpectedResponseError";
 
@@ -117,6 +127,7 @@ export class UnexpectedResponseError extends Error {
   }
 }
 
+/** Ошибка проверки пользовательского значения или поля. */
 export class ValidationError extends Error {
   override name = "ValidationError";
 
