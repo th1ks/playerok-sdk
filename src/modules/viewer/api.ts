@@ -19,7 +19,6 @@ import { ChoosenCardResonseSchmea } from "./cards/schemas.js";
 import type { UsernameAvailabilityResponse } from "./registration/types.js";
 import { ValidationError } from "../../error.js";
 import { UsernameAvailabilitySchema } from "./registration/schema.js";
-import { httpUrl } from "zod";
 
 /** Методы текущего авторизованного пользователя Playerok. */
 export class ViewerAPI {
