@@ -34,6 +34,11 @@ export class ServerError extends ApiError {
   override name = "ServerError";
 }
 
+/** Ошибка ответа сервера с кодом 409. */
+export class ConflictError extends ApiError {
+  override name = "ConflictError";
+}
+
 /** Ошибка 429 с необязательной задержкой `retryAfter`. */
 export class RateLimitError extends ApiError {
   override name = "RateLimitError";
@@ -71,6 +76,9 @@ export function handleError(
 
     case 404:
       throw new NotFoundError(status, message, path, data);
+
+    case 409:
+      throw new ConflictError(status, message, path, data)
 
     case 429:
       throw new RateLimitError(

@@ -16,6 +16,10 @@ import { ViewerSchema } from "./model/viewer.schema.js";
 import { ViewerNotificationsSchema } from "./notifications/schemas.js";
 import type { ViewerNotification } from "./notifications/types.js";
 import { ChoosenCardResonseSchmea } from "./cards/schemas.js";
+import type { UsernameAvailabilityResponse } from "./registration/types.js";
+import { ValidationError } from "../../error.js";
+import { UsernameAvailabilitySchema } from "./registration/schema.js";
+import { httpUrl } from "zod";
 
 /** Методы текущего авторизованного пользователя Playerok. */
 export class ViewerAPI {
@@ -81,5 +85,44 @@ export class ViewerAPI {
     }
 
     return ChoosenCardResonseSchmea.parse(r)
+  }
+
+  /**
+   * Проверяет доступность имени пользователя.
+   *
+   * @param username Имя пользователя, которое нужно проверить.
+   * @returns Результат проверки доступности имени пользователя.
+   *
+   * @throws {@link ValidationError}
+   * Если передано невалидное имя пользователя.
+   */
+  async checkUsernameAvailability(username: string): Promise<UsernameAvailabilityResponse> {
+    if (!username) {
+      throw new ValidationError(username, "Имя пользователя должно быть валидным!")
+    }
+
+    const r = await this.client.get(`/viewer/username-availability?username=${username}`)
+    return UsernameAvailabilitySchema.parse(r)
+  }
+
+  /**
+   * Завершает регистрацию нового пользователя, устанавливая имя пользователя.
+   *
+   * @param username Имя пользователя, которое нужно установить
+   *
+   * @throws {@link ConflictError}
+   * Если пользователь уже установил имя пользователя.
+   *
+   * Известные коды ошибки:
+   * - `username_already_set`
+   *
+   * @returns Профиль пользователя
+   */
+  async completeRegistration(username: string): Promise<Viewer> {
+    const r = await this.client.post("/viewer/registration", {
+      "username": username
+    })
+
+    return ViewerSchema.parse(r)
   }
 }
