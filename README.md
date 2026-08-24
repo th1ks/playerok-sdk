@@ -44,3 +44,7 @@ const client = new PlayerokClient({
 ## Typedoc
 
 Находится на https://th1ks.github.io/playerok-sdk/
+
+## Вопросы
+
+По всем вопросам и предложениям вы можете обратиться в [Telegram чат](https://t.me/+kPISSPaCbZljM2Ey)
