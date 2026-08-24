@@ -31,7 +31,7 @@ export type {
   ViewerAvatarRequest,
   ViewerAvatarResponse,
 } from "./modules/viewer/avatar/types.js";
-export type { ChoosenCardResonse } from "./modules/viewer/cards/types.js";
+export type { ChoosenCardResponse } from "./modules/viewer/cards/types.js";
 export { ChatType } from "./modules/viewer/chats/types.js";
 export type {
   ViewerChatsByTypeResponse,
