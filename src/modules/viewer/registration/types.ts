@@ -1,4 +1,11 @@
-import type z from "zod";
-import type { UsernameAvailabilityResponseSchema } from "./schemas";
+/** Результат проверки доступности имени пользователя. */
+export interface UsernameAvailabilityResponse {
+  /** Занято ли указанное имя пользователя. */
+  isTaken: boolean;
+}
 
-export type UsernameAvailabilityResponse = z.infer<typeof UsernameAvailabilityResponseSchema>
+/** Тело запроса завершения регистрации пользователя. */
+export interface RegisterViewerRequest {
+  /** Имя пользователя, которое нужно установить. */
+  username: string;
+}

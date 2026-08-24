@@ -1,9 +1,16 @@
-import type { z } from "zod";
-
-import type { ViewerAvatarRequestSchema, ViewerAvatarResponseSchema } from "./schemas.js";
+import type { Avatar } from "../model/types.js";
 
 /** Тело запроса установки аватара. */
-export type ViewerAvatarRequest = z.infer<typeof ViewerAvatarRequestSchema>;
+export interface ViewerAvatarRequest {
+  /** UUID ранее загруженного avatar-файла. */
+  avatarId: string;
+}
 
 /** Ответ установки аватара. */
-export type ViewerAvatarResponse = z.infer<typeof ViewerAvatarResponseSchema>;
+export interface ViewerAvatarResponse {
+  /** URL основного изображения аватара. */
+  avatarURL: string;
+
+  /** Набор URL обновлённого аватара разных размеров. */
+  avatar: Avatar;
+}

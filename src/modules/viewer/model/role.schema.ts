@@ -1,21 +1,22 @@
 import { z } from "zod";
+import type { Role } from "./types.js";
 
 export const RoleSchema = z.enum([
-  "USER", // Обычный пользователь платформы
-  "ACCOUNTANT", // Финансы и бухгалтерский учёт
-  "ADMIN", // Администрирование платформы
-  "ADV_DIRECTOR", // Управление рекламным направлением
-  "ADV_MANAGER", // Работа с рекламными размещениями
-  "CHECKER", // Проверка и контроль товаров
-  "DEVELOPER", // Разработка и техническое обслуживание
-  "GAMES_AND_APPS", // Управление каталогом игр и приложений
-  "MODERATOR", // Модерация пользователей и материалов
-  "MONITORING", // Контроль состояния и доступности товаров
-  "OFFICIAL_SELLER", // Представитель официального продавца
-  "OFFICIAL_SELLER_ADMIN", // Администратор официального продавца
-  "POSTMODERATOR", // Модерация публикаций и контента
-  "POSTSECURITY", // Контроль безопасности публикаций
-  "SECURITY", // Безопасность и контроль нарушений
-  "SUPPORT", // Поддержка пользователей
-  "SYSTEM_SELLER", // Системная роль продавца
-]);
+  "USER",
+  "ACCOUNTANT",
+  "ADMIN",
+  "ADV_DIRECTOR",
+  "ADV_MANAGER",
+  "CHECKER",
+  "DEVELOPER",
+  "GAMES_AND_APPS",
+  "MODERATOR",
+  "MONITORING",
+  "OFFICIAL_SELLER",
+  "OFFICIAL_SELLER_ADMIN",
+  "POSTMODERATOR",
+  "POSTSECURITY",
+  "SECURITY",
+  "SUPPORT",
+  "SYSTEM_SELLER",
+]) satisfies z.ZodType<Role>;

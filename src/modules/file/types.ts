@@ -1,22 +1,47 @@
-import type { z } from "zod";
-import type {
-  ConfirmUploadFileRequestSchema,
-  UploadFieldsSchema,
-  UploadUrlSchema,
-} from "./schemas.js";
-
 /** Поля multipart-формы, выданные upload endpoint. */
-export type UploadFields = z.infer<typeof UploadFieldsSchema>;
+export interface UploadFields {
+  /** Имя хранилища, в которое загружается файл. */
+  bucket: string;
+
+  /** Алгоритм подписи AWS. */
+  "X-Amz-Algorithm": string;
+
+  /** Учётные данные AWS для подписанного запроса. */
+  "X-Amz-Credential": string;
+
+  /** Дата создания подписи AWS. */
+  "X-Amz-Date": string;
+
+  /** Ключ объекта в хранилище. */
+  key: string;
+
+  /** Политика загрузки в формате Base64. */
+  Policy: string;
+
+  /** Подпись политики загрузки. */
+  "X-Amz-Signature": string;
+}
+
 /** Нормализованный ответ endpoint получения URL загрузки. */
-export type UploadFileResponse = z.infer<typeof UploadUrlSchema>;
+export interface UploadFileResponse {
+  /** Полный URL, на который нужно отправить multipart-форму. */
+  url: string;
+
+  /** Поля, которые необходимо добавить в multipart-форму. */
+  fields: UploadFields;
+
+  /** Идентификатор файла, если он был возвращён API. */
+  file_id: string | undefined;
+}
+
 /** Тело запроса подтверждения загрузки. */
-export type ConfirmUploadFileRequest = z.infer<typeof ConfirmUploadFileRequestSchema>;
+export interface ConfirmUploadFileRequest {
+  /** Идентификатор загруженного файла. */
+  id: string;
+}
 
 /** Дополнительные параметры загрузки файла. */
 export interface ConfirmUploadOptions {
-  /**
-   * Requests Playerok's avatar-specific upload flow. This preserves the
-   * original GIF in avatar storage instead of converting it during upload.
-   */
+  /** Включает avatar-режим, сохраняющий исходный GIF без конвертации. */
   fileType?: "avatar";
 }

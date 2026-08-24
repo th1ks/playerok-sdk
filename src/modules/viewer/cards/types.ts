@@ -1,5 +1,17 @@
-import type { z } from "zod";
-import type {ChoosenCardResponseSchmea} from "./schemas"
-
 /** Маскированные данные выбранной платёжной карты. */
-export type ChoosenCardResponse = z.infer<typeof ChoosenCardResponseSchmea>
+export interface ChoosenCardResponse {
+  /** Идентификатор карты. */
+  id: string;
+
+  /** Первые шесть цифр номера карты. */
+  cardFirstSix: string;
+
+  /** Последние четыре цифры номера карты. */
+  cardLastFour: string;
+
+  /** Тип платёжной карты. */
+  cardType: string;
+
+  /** Выбрана ли карта для текущих операций. */
+  isChosen: boolean;
+}

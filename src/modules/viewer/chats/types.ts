@@ -1,20 +1,20 @@
-import type { z } from "zod";
-
-import type {
-  ViewerChatsByTypeResponseSchema,
-  ViewerUnreadChatsCounterResponseSchema,
-} from "./schemas.js";
-
 /** Ответ со счётчиком непрочитанных чатов. */
-export type ViewerUnreadChatsCounterResponse = z.infer<
-  typeof ViewerUnreadChatsCounterResponseSchema
->;
+export interface ViewerUnreadChatsCounterResponse {
+  /** Количество непрочитанных чатов. */
+  count: number;
+}
 
 /** Ответ endpoint чатов указанного типа. */
-export type ViewerChatsByTypeResponse = z.infer<typeof ViewerChatsByTypeResponseSchema>;
+export interface ViewerChatsByTypeResponse {
+  /** Идентификатор системного чата. */
+  id: string;
+}
 
 /** Поддерживаемые системные чаты Playerok. */
 export enum ChatType {
+  /** Системный чат. */
   SYSTEM = "SYSTEM",
+
+  /** Чат службы поддержки. */
   SUPPORT = "SUPPORT",
 }

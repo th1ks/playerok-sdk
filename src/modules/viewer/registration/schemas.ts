@@ -1,9 +1,10 @@
-import z from "zod";
+import { z } from "zod";
+import type { RegisterViewerRequest, UsernameAvailabilityResponse } from "./types.js";
 
 export const UsernameAvailabilityResponseSchema = z.object({
-  isTaken: z.boolean()
-})
+  isTaken: z.boolean(),
+}) satisfies z.ZodType<UsernameAvailabilityResponse>;
 
 export const RegisterViewerRequestSchema = z.object({
-  username: z.string()
-})
+  username: z.string(),
+}) satisfies z.ZodType<RegisterViewerRequest>;

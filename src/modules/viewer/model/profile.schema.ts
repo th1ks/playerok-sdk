@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { AvatarSchema } from "./avatar.schema.js";
+import type { Profile } from "./types.js";
 
 export const ProfileSchema = z.object({
-  id: z.string(), // Айди юзера
-  avatarURL: z.string().nullable(), // Ссылка на аватарку
-  avatar: AvatarSchema.nullable(), // Разные размеры аватарок
-  testimonialCounter: z.number(), // reviews count
-});
+  id: z.string(),
+  avatarURL: z.string().nullable(),
+  avatar: AvatarSchema.nullable(),
+  testimonialCounter: z.number(),
+}) satisfies z.ZodType<Profile>;

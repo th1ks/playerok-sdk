@@ -1,8 +1,13 @@
 import { z } from "zod";
+import type {
+  ConfirmOtpRequest,
+  ConfirmOtpResponse,
+  SendOtpRequest,
+} from "./types.js";
 
 export const SendOtpRequestSchema = z.object({
-  email: z.email(), // Почта куда отправить код
-});
+  email: z.email(),
+}) satisfies z.ZodType<SendOtpRequest>;
 
 export const ConfirmOtpRequestSchema = z.object({
   email: z.email(),
@@ -10,7 +15,7 @@ export const ConfirmOtpRequestSchema = z.object({
     .string()
     .length(6)
     .regex(/^\d{6}$/),
-});
+}) satisfies z.ZodType<ConfirmOtpRequest>;
 
 /** Схема ответа подтверждения OTP. */
 export const ConfirmOtpResponseSchema = z.object({
@@ -22,4 +27,4 @@ export const ConfirmOtpResponseSchema = z.object({
     })
     .nullable()
     .optional(),
-});
+}) satisfies z.ZodType<ConfirmOtpResponse>;

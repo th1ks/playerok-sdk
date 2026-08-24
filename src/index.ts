@@ -10,11 +10,16 @@ export { AuthAPI } from "./modules/auth/api.js";
 export type {
   ConfirmOtpRequest,
   ConfirmOtpResponse,
+  SecondFactorSession,
   SendOtpRequest,
 } from "./modules/auth/types.js";
 export { BannerAPI } from "./modules/banners/api.js";
 export { BannerFormat } from "./modules/banners/schemas.js";
-export type { PromoBannersResponse } from "./modules/banners/types.js";
+export type {
+  BannerImages,
+  PromoBanner,
+  PromoBannersResponse,
+} from "./modules/banners/types.js";
 export { FileAPI } from "./modules/file/api.js";
 export type {
   ConfirmUploadFileRequest,
@@ -24,6 +29,15 @@ export type {
 } from "./modules/file/types.js";
 export { ItemsAPI } from "./modules/items/api.js";
 export type { ItemPauseResponse } from "./modules/items/types.js";
+export { TopReviewsAPI } from "./modules/reviews/top-reviews/api.js";
+export type {
+  ReviewDeal,
+  ReviewDealItem,
+  ReviewItem,
+  ReviewPageInfo,
+  ReviewUser,
+  TopReviewsResponse,
+} from "./modules/reviews/top-reviews/types.js";
 export { UsersAPI } from "./modules/users/api.js";
 export type { GetUserByUsernameResponse } from "./modules/users/types.js";
 export { ViewerAPI } from "./modules/viewer/api.js";
@@ -48,4 +62,8 @@ export type {
   ViewerNotification,
   ViewerNotifications,
 } from "./modules/viewer/notifications/types.js";
+export type {
+  RegisterViewerRequest,
+  UsernameAvailabilityResponse,
+} from "./modules/viewer/registration/types.js";
 export { RateLimiter, type RateLimiterOptions } from "./rate-limit.js";

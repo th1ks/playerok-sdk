@@ -1,44 +1,47 @@
-import z from "zod";
-import { RoleSchema } from "../../viewer/model/role.schema";
+import { z } from "zod";
+import { RoleSchema } from "../../viewer/model/role.schema.js";
+import type {
+  ReviewDeal as ReviewDealType,
+  ReviewDealItem as ReviewDealItemType,
+  ReviewItem as ReviewItemType,
+  ReviewPageInfo as ReviewPageInfoType,
+  ReviewUser as ReviewUserType,
+  TopReviewsResponse,
+} from "./types.js";
 
-/** Создатель отзыва и продавец */
 export const ReviewUser = z.object({
-  id: z.string(), // Айди пользователя
-  isBlocked: z.boolean(), // Заблокирован ли пользователь
-  role: RoleSchema, // Роль пользователя
-  username: z.string(), // Имя пользователя
-  rating: z.number(), // Рейтинг пользователя
-  createdAt: z.string(), // Дата создания юзера
-  testimonialCounter: z.number(), // Количество отзывов юзера
-  isVip: z.boolean().nullable(), // Имеет ли пользователь вип статус?
-  avatarURL: z.string().nullable() // Аватарка юзера, может быть null
-})
+  id: z.string(),
+  isBlocked: z.boolean(),
+  role: RoleSchema,
+  username: z.string(),
+  rating: z.number(),
+  createdAt: z.string(),
+  testimonialCounter: z.number(),
+  isVip: z.boolean().nullable(),
+  avatarURL: z.string().nullable(),
+}) satisfies z.ZodType<ReviewUserType>;
 
-/** Купленный предмет */
 export const ReviewDealItem = z.object({
-  id: z.string(), // Айди предмета
-  rawPrice: z.number(), // Цена с учетом скидки
-  price: z.number(), // Цена без учета скидки
-  slug: z.string(), // Слаг предмета
-  name: z.string(), // Имя предмета
-  attachmentUrl: z.string() // Первая картинка предмета
-})
+  id: z.string(),
+  rawPrice: z.number(),
+  price: z.number(),
+  slug: z.string(),
+  name: z.string(),
+  attachmentUrl: z.string(),
+}) satisfies z.ZodType<ReviewDealItemType>;
 
-/** Review Deal */
 export const ReviewDeal = z.object({
-  id: z.string(), // Айди сделки
-  item: ReviewDealItem // Купленный предмет в сделке
-})
+  id: z.string(),
+  item: ReviewDealItem,
+}) satisfies z.ZodType<ReviewDealType>;
 
-/** GraphQl пагинация */
 export const ReviewPageInfo = z.object({
   hasPreviousPage: z.boolean(),
   hasNextPage: z.boolean(),
   startCursor: z.string().nullable(),
-  endCursor: z.string().nullable()
-})
+  endCursor: z.string().nullable(),
+}) satisfies z.ZodType<ReviewPageInfoType>;
 
-/** Item Review */
 export const ReviewItem = z.object({
   id: z.string(),
   text: z.string().nullable(),
@@ -49,10 +52,9 @@ export const ReviewItem = z.object({
   user: ReviewUser,
   creator: ReviewUser,
   deal: ReviewDeal,
-})
+}) satisfies z.ZodType<ReviewItemType>;
 
-/* Ответ top-reviews */
 export const TopReviewsResponseSchema = z.object({
   items: z.array(ReviewItem),
-  pageInfo: ReviewPageInfo
-})
+  pageInfo: ReviewPageInfo,
+}) satisfies z.ZodType<TopReviewsResponse>;

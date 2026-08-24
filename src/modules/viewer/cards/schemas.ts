@@ -1,9 +1,10 @@
-import z, { boolean, string } from "zod";
+import { z } from "zod";
+import type { ChoosenCardResponse } from "./types.js";
 
 export const ChoosenCardResponseSchmea = z.object({
-  id: string(), // Айди карты
-  cardFirstSix: string(), // Первые 6 цифр карты
-  cardLastFour: string(), // Последние 4 цифры карты
-  cardType: string(), // Тип карты
-  isChosen: boolean() // Выбрана ли карта
-})
+  id: z.string(),
+  cardFirstSix: z.string(),
+  cardLastFour: z.string(),
+  cardType: z.string(),
+  isChosen: z.boolean(),
+}) satisfies z.ZodType<ChoosenCardResponse>;
