@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type {ChoosenCardResonseSchmea} from "./schemas"
+import type {ChoosenCardResponseSchmea} from "./schemas"
 
 /** Маскированные данные выбранной платёжной карты. */
-export type ChoosenCardResonse = z.infer<typeof ChoosenCardResonseSchmea>
+export type ChoosenCardResponse = z.infer<typeof ChoosenCardResponseSchmea>

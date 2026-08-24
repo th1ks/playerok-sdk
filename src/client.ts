@@ -3,6 +3,7 @@ import { AuthAPI } from "./modules/auth/api.js";
 import { BannerAPI } from "./modules/banners/api.js";
 import { FileAPI } from "./modules/file/api.js";
 import { ItemsAPI } from "./modules/items/api.js";
+import { TopReviewsAPI } from "./modules/reviews/top-reviews/api.js";
 import { UsersAPI } from "./modules/users/api.js";
 import { ViewerAPI } from "./modules/viewer/api.js";
 
@@ -44,6 +45,8 @@ export class PlayerokClient {
   public readonly banners: BannerAPI;
   /** Методы управления публикацией товаров. */
   public readonly items: ItemsAPI;
+  /** Метод получения топа отзывов */
+  public readonly topReviews: TopReviewsAPI;
 
   /** Создаёт клиент и инициализирует все API-модули. */
   constructor(options: PlayerokClientOptions = {}) {
@@ -57,5 +60,6 @@ export class PlayerokClient {
     this.users = new UsersAPI(this.http);
     this.banners = new BannerAPI(this.http);
     this.items = new ItemsAPI(this.http);
+    this.topReviews = new TopReviewsAPI(this.http);
   }
 }

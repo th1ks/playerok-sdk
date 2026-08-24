@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const SendOtpRequestSchema = z.object({
-  email: z.email(),
+  email: z.email(), // Почта куда отправить код
 });
 
 export const ConfirmOtpRequestSchema = z.object({

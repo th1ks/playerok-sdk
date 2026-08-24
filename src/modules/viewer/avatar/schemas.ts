@@ -8,6 +8,5 @@ export const ViewerAvatarRequestSchema = z.object({
 
 export const ViewerAvatarResponseSchema = z.object({
   avatarURL: z.string(),
-
   avatar: AvatarSchema,
 });

@@ -1,4 +1,4 @@
 import type z from "zod";
-import type { UsernameAvailabilitySchema } from "./schema";
+import type { UsernameAvailabilityResponseSchema } from "./schemas";
 
-export type UsernameAvailabilityResponse = z.infer<typeof UsernameAvailabilitySchema>
+export type UsernameAvailabilityResponse = z.infer<typeof UsernameAvailabilityResponseSchema>

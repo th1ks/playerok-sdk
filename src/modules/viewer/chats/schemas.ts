@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const ViewerUnreadChatsCounterResponseSchema = z.object({
-  count: z.number(),
+  count: z.number(), // Количество непрочитанных чатов
 });
 
 export const ViewerChatsByTypeResponseSchema = z.object({

@@ -1,7 +1,6 @@
 import type { HttpClient } from "../../http.js";
 import { ViewerAvatarRequestSchema, ViewerAvatarResponseSchema } from "./avatar/schemas.js";
 import type { ViewerAvatarResponse } from "./avatar/types.js";
-import type { ChoosenCardResonse } from "./cards/types.js";
 import {
   ViewerChatsByTypeResponseSchema,
   ViewerUnreadChatsCounterResponseSchema,
@@ -15,10 +14,12 @@ import type { Viewer } from "./model/types.js";
 import { ViewerSchema } from "./model/viewer.schema.js";
 import { ViewerNotificationsSchema } from "./notifications/schemas.js";
 import type { ViewerNotification } from "./notifications/types.js";
-import { ChoosenCardResonseSchmea } from "./cards/schemas.js";
 import type { UsernameAvailabilityResponse } from "./registration/types.js";
 import { ValidationError } from "../../error.js";
-import { UsernameAvailabilitySchema } from "./registration/schema.js";
+import { RegisterViewerRequestSchema, UsernameAvailabilityResponseSchema } from "./registration/schemas.js";
+import { isUsernameValid } from "../../util.js";
+import { ChoosenCardResponseSchmea } from "./cards/schemas.js";
+import type { ChoosenCardResponse } from "./cards/types.js";
 
 /** Методы текущего авторизованного пользователя Playerok. */
 export class ViewerAPI {
@@ -76,14 +77,14 @@ export class ViewerAPI {
   }
 
   /** Возвращает выбранную платёжную карту либо `null`, если карта не выбрана. */
-  async getChoosenCard(): Promise<ChoosenCardResonse | null> {
+  async getChoosenCard(): Promise<ChoosenCardResponse | null> {
     const r = await this.client.get("/viewer/chosen-card")
 
     if (r == null) {
       return null
     }
 
-    return ChoosenCardResonseSchmea.parse(r)
+    return ChoosenCardResponseSchmea.parse(r)
   }
 
   /**
@@ -96,12 +97,12 @@ export class ViewerAPI {
    * Если передано невалидное имя пользователя.
    */
   async checkUsernameAvailability(username: string): Promise<UsernameAvailabilityResponse> {
-    if (!username) {
+    if (!isUsernameValid(username)) {
       throw new ValidationError(username, "Имя пользователя должно быть валидным!")
     }
 
     const r = await this.client.get(`/viewer/username-availability?username=${username}`)
-    return UsernameAvailabilitySchema.parse(r)
+    return UsernameAvailabilityResponseSchema.parse(r)
   }
 
   /**
@@ -118,9 +119,13 @@ export class ViewerAPI {
    * @returns Профиль пользователя
    */
   async completeRegistration(username: string): Promise<Viewer> {
-    const r = await this.client.post("/viewer/registration", {
-      "username": username
-    })
+    if (!isUsernameValid(username)) {
+      throw new ValidationError(username, "Имя пользователя должно быть валидным!")
+    }
+
+    const body = RegisterViewerRequestSchema.parse({username: username})
+
+    const r = await this.client.post("/viewer/registration", body)
 
     return ViewerSchema.parse(r)
   }

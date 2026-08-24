@@ -8,10 +8,10 @@ const ImageSchema = z.object({
 });
 
 export const BannerSchema = z.object({
-  id: z.uuidv7(),
-  name: z.string(),
-  url: z.url(),
-  images: ImageSchema,
+  id: z.uuidv7(), // Айди баннера
+  name: z.string(), // Имя баннера
+  url: z.url(), // Редредикт ссылка с баннера
+  images: ImageSchema, // Разновидности изображений баннера
 });
 
 export const BannersResponseSchema = z.object({
